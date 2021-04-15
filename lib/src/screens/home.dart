@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/cat.dart';
-import 'dart:math';
 
 class Home extends StatefulWidget {
   HomeState createState() => HomeState();
@@ -9,9 +8,28 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> with TickerProviderStateMixin {
   Animation<double> catAnimation;
   AnimationController catController;
+  Animation<double> boxAnimation;
+  AnimationController boxController;
 
   initState() {
     super.initState();
+
+    boxController = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
+    );
+    boxAnimation = Tween(begin: 0.0, end: 3.14).animate(
+      CurvedAnimation(
+        parent: boxController,
+        curve: Curves.linear,
+      ),
+    );
+    boxAnimation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        boxController.repeat();
+      }
+    });
+    boxController.forward();
 
     catController = AnimationController(
       duration: Duration(milliseconds: 200),
@@ -83,14 +101,20 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
   Widget buildLeftFlap() {
     return Positioned(
       left: 3.0,
-      child: Transform.rotate(
+      child: AnimatedBuilder(
+        animation: boxAnimation, 
         child: Container(
           height: 10.0,
           width: 125.0,
           color: Colors.brown,
         ),
-        angle: pi * 0.6,
-        alignment: Alignment.topLeft,
+        builder: (context, child) {
+          return Transform.rotate(
+            child: child,
+            alignment: Alignment.topLeft,
+            angle: boxAnimation.value,
+          );
+        },
       ),
     );
   }
